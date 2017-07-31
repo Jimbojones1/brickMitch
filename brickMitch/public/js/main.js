@@ -4,7 +4,38 @@ let paddle;
 let bricks;
 let newBrick;
 let brickInfo;
+let lifeLostText;
+let score = 0;
+let lives = 3;
 
+
+const livesBoard = document.getElementById('Lives');
+const scoreBoard = document.getElementById('Score');
+
+
+const updateScore = () => {
+  console.log(typeof  scoreBoard.innerText)
+  scoreBoard.innerText = parseInt(scoreBoard.innerText) + 10;
+}
+
+const updateLives = () => {
+  livesBoard.innerText = lives;
+}
+
+const checkLives = () => {
+  let countRemaining = 0;
+  for (let i = 0; i < bricks.children.length; i++){
+    if(bricks.children[i].alive === true){
+      countRemaining++
+    }
+  }
+
+  if (countRemaining === 0){
+    alert('you passed this level')
+  }
+
+
+}
 
 const preload = () => {
   game.scale.scaleMode             = Phaser.ScaleManager.SHOW_ALL;
@@ -27,18 +58,37 @@ const create = () => {
     ball.body.collideWorldBounds = true;
     ball.body.bounce.set(1);
     ball.checkWorldBounds = true;
-    ball.events.onOutOfBounds.add(function(){
-        alert('Game over!');
-        location.reload();
-    }, this);
+    ball.events.onOutOfBounds.add(ballOutScreen);
 
     paddle = game.add.sprite(game.world.width*0.5, game.world.height-5, 'paddle');
     paddle.anchor.set(0.5,1);
     game.physics.enable(paddle, Phaser.Physics.ARCADE);
     paddle.body.immovable = true;
-
+    let textStyle =  { font: '18px Arial', fill: '#0095dd'}
+    lifeLostText = game.add.text(game.world.width*0.5, game.world.height*0.5, 'Mitch is bummed out, click to inspire Paul Ryan again', textStyle);
+    lifeLostText.anchor.set(0.5);
+    lifeLostText.visible = false;
     initBricks();
 }
+
+const ballOutScreen = () => {
+  lives--
+  if(lives){
+    updateLives()
+    lifeLostText.visible = true;
+    ball.reset(game.world.width*0.5, game.world.height-25);
+    paddle.reset(game.world.width*0.5, game.world.height-5);
+    game.input.onDown.addOnce(() => {
+      lifeLostText.visible = false;
+      ball.body.velocity.set(150, -150);
+    })
+  } else {
+    alert('game over woman');
+    location.reload();
+  }
+}
+
+
 
 const update = () => {
   game.physics.arcade.collide(ball, paddle);
@@ -48,6 +98,8 @@ const update = () => {
 
 const ballHitBrick = (ball, brick) => {
   brick.kill();
+  updateScore();
+  checkLives();
 }
 
 const initBricks = () => {
@@ -55,8 +107,8 @@ const initBricks = () => {
     width: 50,
     height: 20,
     count: {
-      row: 7,
-      col: 3
+      row: 1,
+      col: 1
     },
     offset: {
       top: 30,
