@@ -130,8 +130,6 @@ const initBricks = () => {
       bricks.add(newBrick)
     }
   }
-
-
 }
 
 
